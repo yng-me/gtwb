@@ -136,7 +136,7 @@
 #'
 #' # To export `tab` as Excel
 #' \dontrun{
-#' tab |> as_workbook("gtcars.xlsx")
+#' tab |> as_workbook()
 #' }
 
 
@@ -150,7 +150,7 @@ as_workbook <- function(
   ...
 ) {
 
-  if("gt_tbl" %in% class(.data)) {
+  if(!("gt_tbl" %in% class(.data))) {
     stop("Not a gt object.")
   }
 
@@ -307,7 +307,15 @@ as_workbook <- function(
   if(is.null(.filename)) {
     title <- .data[["_heading"]]$title[1]
     if(!is.null(title)) {
-      .filename <- stringr::str_remove_all(title, "[^[:alnum:]]")
+      title <-
+        stringr::str_trim(
+          stringr::str_replace_all(
+            stringr::str_replace_all(title, "[^[:alnum:]]", " "),
+            "\\s+",
+            " "
+          )
+        )
+      .filename <- paste0(title, ".xlsx")
     } else {
       .filename <- "Book 1.xlsx"
     }
