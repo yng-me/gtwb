@@ -1,7 +1,7 @@
 Package: gtwb
 Type: Package
 Title: GT Workbook
-Description: An extension to gt package that allows exporting of gt object in to an Excel workbook.
+Description: An extension of `gt` package for exporting gt object in to an Excel workbook.
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -17,14 +17,14 @@ Maintainer: Bhas Abdulsamad <aeabdulsamad@gmail.com>
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Import:
-  gt,
+Imports:
   dplyr,
   tidyr,
   stringr,
   openxlsx
 Suggests: 
   testthat (>= 3.0.0),
+  gt,
   cli,
   knitr,
   rmarkdown
