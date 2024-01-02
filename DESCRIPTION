@@ -1,4 +1,4 @@
-Package: gtwb
+Package: gtx
 Type: Package
 Title: GT Workbook
 Description: An extension of *gt* package for exporting *gt* object in to an Excel workbook.
