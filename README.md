@@ -1,4 +1,6 @@
-# gtx
+# gtx: GT to Excel
+
+An extension of `gt` package for exporting `gt` object in to an Excel workbook using `openxlsx` package.
 
 ### DEVELOPMENT IN PROGRESS!
 
