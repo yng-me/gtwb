@@ -106,7 +106,8 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
   wb |> openxlsx::addStyle(
     style = openxlsx::createStyle(
       border = "top",
-      borderColour = get_value(.data, "heading_border_bottom_color")
+      borderColour = get_value(.data, "heading_border_bottom_color"),
+      borderStyle = set_border_style(get_value(.data, "heading_border_bottom_width"))
     ),
     rows = restart_at,
     cols = col_range,

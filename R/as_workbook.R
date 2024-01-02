@@ -214,6 +214,7 @@ as_workbook <- function(
     colNames = FALSE
   )
 
+  col_range <- .start_col:(length(boxhead) + 1)
   data_row_start <- restart_at + 1
   row_groups <- .data[["_row_groups"]]
 
@@ -248,13 +249,9 @@ as_workbook <- function(
       wb |> openxlsx::addStyle(
         sheet = .sheet_name,
         style = openxlsx::createStyle(
-          border = "top",
-          borderColour = get_value(.data, "row_group_border_top_color"),
-          valign = "center",
-          fontSize = percent_to_pt(
-            .px = get_value(.data, "row_group_font_size"),
-            .percent = get_value(.data, "table_font_size")
-          )
+          border = "bottom",
+          borderColour = get_value(.data, "row_group_border_bottom_color"),
+          borderStyle = set_border_style(get_value(.data, "row_group_border_bottom_width"))
         ),
         rows = restart_at + 1,
         cols = .start_col:(ncol(row_df) + 1),
@@ -265,8 +262,14 @@ as_workbook <- function(
       wb |> openxlsx::addStyle(
         sheet = .sheet_name,
         style = openxlsx::createStyle(
-          border = "bottom",
-          borderColour = get_value(.data, "row_group_border_bottom_color")
+          border = "top",
+          borderColour = get_value(.data, "row_group_border_top_color"),
+          borderStyle = set_border_style(get_value(.data, "row_group_border_top_width")),
+          valign = "center",
+          fontSize = percent_to_pt(
+            .px = get_value(.data, "row_group_font_size"),
+            .percent = get_value(.data, "table_font_size")
+          )
         ),
         rows = restart_at + 1,
         cols = .start_col:(ncol(row_df) + 1),
@@ -288,7 +291,21 @@ as_workbook <- function(
         colNames = FALSE
       )
 
+      wb |> openxlsx::addStyle(
+        sheet = .sheet_name,
+        style = openxlsx::createStyle(
+          valign = "center",
+          border = "top",
+          borderColour = get_value(.data, "table_body_border_bottom_color")
+        ),
+        rows = (restart_at + 2):(restart_at + nrow(row_df) + 1),
+        cols = col_range,
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+
       restart_at <- restart_at + nrow(row_df) + 1
+
     }
 
   } else {
@@ -304,11 +321,22 @@ as_workbook <- function(
       colNames = FALSE
     )
 
-    restart_at <- restart_at + nrow(df)
+    restart_at <- restart_at + nrow(df) + 1
+
+    wb |> openxlsx::addStyle(
+      sheet = .sheet_name,
+      style = openxlsx::createStyle(
+        valign = "center",
+        border = "top",
+        borderColour = get_value(.data, "table_body_border_bottom_color")
+      ),
+      rows = data_row_start:(restart_at - 1),
+      cols = col_range,
+      gridExpand = TRUE,
+      stack = TRUE
+    )
 
   }
-
-  col_range <- .start_col:(length(boxhead) + 1)
 
   wb |> openxlsx::setRowHeights(
     sheet = .sheet_name,
@@ -316,24 +344,41 @@ as_workbook <- function(
     heights = set_row_height(get_value(.data, "data_row_padding_horizontal"))
   )
 
-  wb |> openxlsx::addStyle(
-    sheet = .sheet_name,
-    style = openxlsx::createStyle(
-      valign = "center"
-    ),
-    rows = data_row_start:restart_at,
-    cols = col_range,
-    gridExpand = TRUE,
-    stack = TRUE
-  )
+
+  add_row <- 1
+  if(nrow(.data[["_footnotes"]]) > 0) {
+    add_row <- 0
+  }
+
+  if(with_stub > 0) {
+
+    stub_cols <- .data[["_boxhead"]] |>
+      dplyr::filter(type == "stub") |>
+      pull(var)
+
+    wb |> openxlsx::addStyle(
+      sheet = .sheet_name,
+      style = openxlsx::createStyle(
+        border = "right",
+        borderColour = get_value(.data, "stub_border_color"),
+        borderStyle = set_border_style(get_value(.data, "stub_border_width"))
+      ),
+      rows = data_row_start:(restart_at - add_row),
+      cols = which(stub_cols %in% boxhead) + .start_col - 1,
+      gridExpand = TRUE,
+      stack = TRUE
+    )
+
+  }
 
   wb |> openxlsx::addStyle(
     sheet = .sheet_name,
     style = openxlsx::createStyle(
       border = "bottom",
       borderColour = get_value(.data, "table_body_border_bottom_color"),
+      borderStyle = set_border_style(get_value(.data, "table_body_border_bottom_width"))
     ),
-    rows = restart_at,
+    rows = restart_at - add_row,
     cols = col_range,
     gridExpand = TRUE,
     stack = TRUE
@@ -366,7 +411,8 @@ as_workbook <- function(
     sheet = .sheet_name,
     style = openxlsx::createStyle(
       border = "top",
-      borderColour = get_value(.data, "table_border_top_color")
+      borderColour = get_value(.data, "table_border_top_color"),
+      borderStyle = set_border_style(get_value(.data, "table_border_top_width"))
     ),
     rows = .start_row,
     cols = col_range,
@@ -380,7 +426,8 @@ as_workbook <- function(
     sheet = .sheet_name,
     style = openxlsx::createStyle(
       border = "bottom",
-      borderColour = get_value(.data, "table_border_bottom_color")
+      borderColour = get_value(.data, "table_border_bottom_color"),
+      borderStyle = set_border_style(get_value(.data, "table_border_bottom_width"))
     ),
     rows = restart_at - 1,
     cols = col_range,
@@ -399,14 +446,13 @@ as_workbook <- function(
   if(is.null(.filename)) {
     title <- .data[["_heading"]]$title[1]
     if(!is.null(title)) {
-      title <-
-        stringr::str_trim(
-          stringr::str_replace_all(
-            stringr::str_replace_all(title, "[^[:alnum:]]", " "),
-            "\\s+",
-            " "
-          )
+      title <- stringr::str_trim(
+        stringr::str_replace_all(
+          stringr::str_replace_all(title, "[^[:alnum:]]", " "),
+          "\\s+",
+          " "
         )
+      )
       .filename <- paste0(title, ".xlsx")
     } else {
       .filename <- "Book 1.xlsx"

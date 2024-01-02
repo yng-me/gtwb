@@ -27,7 +27,8 @@ write_footnotes <- function(wb, .data, .start_row, .start_col, ...) {
           fontSize = percent_to_pt(
             .px = get_value(.data, "footnotes_font_size"),
             .percent = get_value(.data, "table_font_size")
-          )
+          ),
+          valign = "center"
         ),
         rows = restart_at,
         cols = .start_col,
@@ -39,6 +40,12 @@ write_footnotes <- function(wb, .data, .start_row, .start_col, ...) {
       restart_at <- restart_at + 1
     }
   }
+
+  wb |> openxlsx::setRowHeights(
+    rows = .start_row:restart_at,
+    heights = set_row_height(get_value(.data, "footnotes_padding_horizontal")),
+    ...
+  )
 
   return(restart_at)
 
@@ -71,7 +78,8 @@ write_source_notes <- function(wb, .data, .start_row, .start_col, ...) {
           fontSize = percent_to_pt(
             .px = get_value(.data, "source_notes_font_size"),
             .percent = get_value(.data, "table_font_size")
-          )
+          ),
+          valign = "center"
         ),
         rows = restart_at,
         cols = .start_col,
@@ -83,6 +91,12 @@ write_source_notes <- function(wb, .data, .start_row, .start_col, ...) {
       restart_at <- restart_at + 1
     }
   }
+
+  wb |> openxlsx::setRowHeights(
+    rows = .start_row:restart_at,
+    heights = set_row_height(get_value(.data, "source_notes_padding_horizontal")),
+    ...
+  )
 
   return(restart_at)
 

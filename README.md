@@ -7,7 +7,7 @@ devtools::install_github("yng-me/gtwb")
 ```
 
 ## TODOS:
+- [ ] Output formating/styling (in progress)
 - [ ] Major refactoring
-- [ ] Output formating/styling
 - [ ] Unit test
 - [ ] Docs
