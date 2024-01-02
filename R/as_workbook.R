@@ -1,10 +1,10 @@
 #' 	Output a *gt* object as Excel
 #'
 #' @param .data A valid \code{gt} object.
-#' @param .filename If \code{NULL}, which is default, will take the title of the table defined in `gt::tab_header()` as the filename. If title is not defined, default filename will be \code{Book 1.xlsx}.
+#' @param .filename If \code{NULL} (which is default), will take the title of the table defined in \code{gt::tab_header()} as the filename. If title is not defined, filename will be set to \code{"Book 1.xlsx"}.
 #' @param .sheet_name Which worksheet to write to. It can be the worksheet index or name. Default is \code{"Sheet 1"}.
-#' @param .start_col A whole number specifying the starting column to write to.
-#' @param .start_row A whole number specifying the starting row to write to.
+#' @param .start_col A counting number specifying the starting column to write to.
+#' @param .start_row A counting number specifying the starting row to write to.
 #' @param .overwrite If \code{TRUE}, will overwrite any existing file with the same name.
 #' @param ... For future implementation.
 #'
@@ -151,7 +151,7 @@ as_workbook <- function(
 ) {
 
   if(!("gt_tbl" %in% class(.data))) {
-    stop("Not a gt object.")
+    stop("Not a valid gt object.")
   }
 
   type <- NULL
@@ -159,7 +159,18 @@ as_workbook <- function(
   column_label <- NULL
 
   wb <- openxlsx::createWorkbook()
-  wb |> openxlsx::addWorksheet(.sheet_name, gridLines = FALSE)
+
+  wb |> modifyBaseFont(
+    fontColour = get_value(.data, "table_font_color"),
+    fontSize = px_to_pt(get_value(.data, "table_font_size")),
+    fontName = get_font_family(.data)
+  )
+
+  wb |> openxlsx::addWorksheet(
+    .sheet_name,
+    gridLines = FALSE,
+    orientation = get_value(.data, "page_orientation")
+  )
 
   boxhead <- .data[["_boxhead"]] |>
     dplyr::filter(type %in% c("stub", "default")) |>
@@ -168,14 +179,12 @@ as_workbook <- function(
 
   restart_at <- wb |>
     write_table_heading(
-      .data[["_heading"]],
+      .data,
       .start_col = .start_col,
       .start_row = .start_row,
       .col_end = length(boxhead),
       sheet = .sheet_name
     )
-
-  row_groups <- .data[["_row_groups"]]
 
   df_headers <- .data[["_boxhead"]] |>
     dplyr::filter(type == "default") |>
@@ -205,7 +214,10 @@ as_workbook <- function(
     colNames = FALSE
   )
 
-  if(!is.null(row_groups)) {
+  data_row_start <- restart_at + 1
+  row_groups <- .data[["_row_groups"]]
+
+  if(length(row_groups) > 0) {
 
     row_group <- .data[["_boxhead"]] |>
       dplyr::filter(type == "row_group") |>
@@ -233,6 +245,40 @@ as_workbook <- function(
         cols = .start_col:(ncol(row_df) + 1)
       )
 
+      wb |> openxlsx::addStyle(
+        sheet = .sheet_name,
+        style = openxlsx::createStyle(
+          border = "top",
+          borderColour = get_value(.data, "row_group_border_top_color"),
+          valign = "center",
+          fontSize = percent_to_pt(
+            .px = get_value(.data, "row_group_font_size"),
+            .percent = get_value(.data, "table_font_size")
+          )
+        ),
+        rows = restart_at + 1,
+        cols = .start_col:(ncol(row_df) + 1),
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+
+      wb |> openxlsx::addStyle(
+        sheet = .sheet_name,
+        style = openxlsx::createStyle(
+          border = "bottom",
+          borderColour = get_value(.data, "row_group_border_bottom_color")
+        ),
+        rows = restart_at + 1,
+        cols = .start_col:(ncol(row_df) + 1),
+        gridExpand = TRUE,
+        stack = TRUE
+      )
+
+      wb |> openxlsx::setRowHeights(
+        sheet = .sheet_name,
+        rows = restart_at + 1,
+        heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
+      )
 
       wb |> openxlsx::writeData(
         sheet = .sheet_name,
@@ -258,13 +304,50 @@ as_workbook <- function(
       colNames = FALSE
     )
 
-    restart_at <- restart_at + nrow(df) + 1
+    restart_at <- restart_at + nrow(df)
 
   }
 
+  col_range <- .start_col:(length(boxhead) + 1)
+
+  wb |> openxlsx::setRowHeights(
+    sheet = .sheet_name,
+    rows = data_row_start:restart_at,
+    heights = set_row_height(get_value(.data, "data_row_padding_horizontal"))
+  )
+
+  wb |> openxlsx::addStyle(
+    sheet = .sheet_name,
+    style = openxlsx::createStyle(
+      valign = "center"
+    ),
+    rows = data_row_start:restart_at,
+    cols = col_range,
+    gridExpand = TRUE,
+    stack = TRUE
+  )
+
+  wb |> openxlsx::addStyle(
+    sheet = .sheet_name,
+    style = openxlsx::createStyle(
+      border = "bottom",
+      borderColour = get_value(.data, "table_body_border_bottom_color"),
+    ),
+    rows = restart_at,
+    cols = col_range,
+    gridExpand = TRUE,
+    stack = TRUE
+  )
+
+  wb |> openxlsx::setColWidths(
+    sheet = .sheet_name,
+    widths = get_value(.data, "table_width"),
+    cols = col_range
+  )
+
   restart_at <- wb |>
     write_footnotes(
-      .data[["_footnotes"]],
+      .data,
       .start_col = .start_col,
       .start_row = restart_at,
       sheet = .sheet_name
@@ -272,28 +355,37 @@ as_workbook <- function(
 
   restart_at <- wb |>
     write_source_notes(
-      .data[["_source_notes"]],
+      .data,
       .start_col = .start_col,
       .start_row = restart_at,
       sheet = .sheet_name
     )
 
+  # Top border style
   wb |> openxlsx::addStyle(
     sheet = .sheet_name,
     style = openxlsx::createStyle(
-      border = "top"
+      border = "top",
+      borderColour = get_value(.data, "table_border_top_color")
     ),
     rows = .start_row,
-    cols = .start_col:(length(boxhead) + 1)
+    cols = col_range,
+    gridExpand = TRUE,
+    stack = TRUE
   )
 
+
+  # Bottom border style
   wb |> openxlsx::addStyle(
     sheet = .sheet_name,
     style = openxlsx::createStyle(
-      border = "bottom"
+      border = "bottom",
+      borderColour = get_value(.data, "table_border_bottom_color")
     ),
     rows = restart_at - 1,
-    cols = .start_col:(length(boxhead) + 1)
+    cols = col_range,
+    gridExpand = TRUE,
+    stack = TRUE
   )
 
   if(.start_col > 1) {
@@ -326,3 +418,5 @@ as_workbook <- function(
   return(.data)
 
 }
+
+

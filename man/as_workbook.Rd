@@ -17,13 +17,13 @@ as_workbook(
 \arguments{
 \item{.data}{A valid \code{gt} object.}
 
-\item{.filename}{If \code{NULL}, which is default, will take the title of the table defined in `gt::tab_header()` as the filename. If title is not defined, default filename will be \code{Book 1.xlsx}.}
+\item{.filename}{If \code{NULL} (which is default), will take the title of the table defined in \code{gt::tab_header()} as the filename. If title is not defined, filename will be set to \code{"Book 1.xlsx"}.}
 
 \item{.sheet_name}{Which worksheet to write to. It can be the worksheet index or name. Default is \code{"Sheet 1"}.}
 
-\item{.start_col}{A whole number specifying the starting column to write to.}
+\item{.start_col}{A counting number specifying the starting column to write to.}
 
-\item{.start_row}{A whole number specifying the starting row to write to.}
+\item{.start_row}{A counting number specifying the starting row to write to.}
 
 \item{.overwrite}{If \code{TRUE}, will overwrite any existing file with the same name.}
 
@@ -160,6 +160,6 @@ tab <- gtcars |>
 
 # To export `tab` as Excel
 \dontrun{
-tab |> as_workbook("gtcars.xlsx")
+tab |> as_workbook()
 }
 }
