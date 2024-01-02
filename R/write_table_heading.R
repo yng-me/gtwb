@@ -8,13 +8,13 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
   if(!is.null(title)) {
 
     if("from_markdown" %in% class(title)) {
-      title <- title[1]
+      title <- paste0("~~~", title[1])
     }
 
     restart_at <- restart_at + 1
 
     wb |> openxlsx::writeData(
-      x = title,
+      x = stringr::str_trim(title),
       startRow = .start_row,
       startCol = .start_col,
       ...
@@ -58,14 +58,14 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
   if(!is.null(subtitle)) {
 
     if("from_markdown" %in% class(subtitle)) {
-      subtitle <- subtitle[1]
+      subtitle <- paste0("~~~", subtitle[1])
     }
 
     restart_at <- restart_at + 1
 
     wb |> openxlsx::writeData(
       ...,
-      x = subtitle,
+      x = stringr::str_trim(subtitle),
       startRow = .start_row + 1,
       startCol = .start_col
     )

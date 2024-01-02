@@ -12,11 +12,11 @@ write_footnotes <- function(wb, .data, .start_row, .start_col, ...) {
       note <- notes$footnotes[[i]]
 
       if("from_markdown" %in% class(note)) {
-        note <- note[1]
+        note <- paste0("~~~", note[1])
       }
 
       wb |> openxlsx::writeData(
-        x = note,
+        x = stringr::str_trim(note),
         startRow = restart_at,
         startCol = .start_col,
         ...
@@ -63,11 +63,11 @@ write_source_notes <- function(wb, .data, .start_row, .start_col, ...) {
       note <- notes[[i]]
 
       if("from_markdown" %in% class(note)) {
-        note <- note[1]
+        note <- paste0("~~~", note[1])
       }
 
       wb |> openxlsx::writeData(
-        x = note,
+        x = stringr::str_trim(note),
         startRow = restart_at,
         startCol = .start_col,
         ...

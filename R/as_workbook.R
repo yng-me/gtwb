@@ -443,11 +443,28 @@ as_workbook <- function(
     stack = TRUE
   )
 
-  wb |> openxlsx::setColWidths(
-    sheet = .sheet_name,
-    widths = get_value(.data, "table_width"),
-    cols = col_range
-  )
+  for(i in seq_along(boxhead)) {
+
+    col_align <- .data[["_boxhead"]] |>
+      dplyr::filter(var == boxhead[i]) |>
+      dplyr::pull(column_align)
+
+    wb |> openxlsx::addStyle(
+      sheet = .sheet_name,
+      style = openxlsx::createStyle(halign = col_align[1]),
+      rows = (data_row_start - 1):restart_at,
+      cols = i + .start_col - 1,
+      gridExpand = TRUE,
+      stack = TRUE
+    )
+  }
+
+
+  # wb |> openxlsx::setColWidths(
+  #   sheet = .sheet_name,
+  #   widths = get_value(.data, "table_width"),
+  #   cols = col_range
+  # )
 
   restart_at <- wb |>
     write_footnotes(
@@ -516,6 +533,13 @@ as_workbook <- function(
     } else {
       .filename <- "Book 1.xlsx"
     }
+  }
+
+  from_md <- which(sapply(wb$sharedStrings, \(x) grep("~~~", x)) == 1)
+
+  for(i in seq_along(from_md)) {
+    m <- wb$sharedStrings[[from_md[i]]]
+    wb$sharedStrings[[from_md[i]]] <- mark_to_sst(m)
   }
 
   wb |> openxlsx::saveWorkbook(file = .filename, overwrite = .overwrite)
