@@ -201,20 +201,79 @@ as_workbook <- function(
     with_stub <- 1
   }
 
-  # spanners <- .data[["_spanners"]]
-  # for(i in seq_along(spanners$spanner_id)) {
-  #
-  # }
+  spanners <- .data[["_spanners"]]
+
+  for(i in seq_along(spanners$spanner_id)) {
+
+    span_cols <- which(boxhead %in% spanners$vars[[1]])
+
+    wb |> openxlsx::writeData(
+      sheet = .sheet_name,
+      x = spanners$spanner_label[i],
+      startCol = span_cols[1] + .start_col - 1,
+      startRow = restart_at,
+    )
+
+    wb |> openxlsx::mergeCells(
+      sheet = .sheet_name,
+      rows = restart_at,
+      cols = span_cols + .start_col - 1
+    )
+
+    wb |> openxlsx::addStyle(
+      sheet = .sheet_name,
+      style = openxlsx::createStyle(
+        border = "bottom",
+        borderColour = get_value(.data, "column_labels_border_bottom_color"),
+        borderStyle = set_border_style(get_value(.data, "column_labels_border_bottom_width")),
+        halign = "center",
+        valign = "center",
+        fontSize = percent_to_pt(
+          .px = get_value(.data, "column_labels_font_size"),
+          .percent = get_value(.data, "table_font_size")
+        )
+      ),
+      rows = restart_at,
+      cols = span_cols + .start_col - 1,
+      gridExpand = TRUE,
+      stack = TRUE
+    )
+
+  }
 
   wb |> openxlsx::writeData(
     sheet = .sheet_name,
     x = df_headers,
     startCol = .start_col + with_stub,
-    startRow = restart_at,
+    startRow = restart_at + nrow(spanners),
     colNames = FALSE
   )
 
+  wb |> openxlsx::setRowHeights(
+    sheet = .sheet_name,
+    rows = restart_at:(restart_at + nrow(spanners)),
+    heights = set_row_height(get_value(.data, "column_labels_padding_horizontal"))
+  )
+
+  restart_at <- restart_at + nrow(spanners)
+
   col_range <- .start_col:(length(boxhead) + 1)
+
+  wb |> openxlsx::addStyle(
+    sheet = .sheet_name,
+    style = openxlsx::createStyle(
+      valign = "center",
+      fontSize = percent_to_pt(
+        .px = get_value(.data, "column_labels_font_size"),
+        .percent = get_value(.data, "table_font_size")
+      )
+    ),
+    rows = restart_at,
+    cols = col_range,
+    gridExpand = TRUE,
+    stack = TRUE
+  )
+
   data_row_start <- restart_at + 1
   row_groups <- .data[["_row_groups"]]
 
