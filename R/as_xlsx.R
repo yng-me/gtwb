@@ -136,11 +136,11 @@
 #'
 #' # To export `tab` as Excel
 #' \dontrun{
-#' tab |> as_workbook()
+#' tab |> as_xlsx()
 #' }
 
 
-as_workbook <- function(
+as_xlsx <- function(
   .data,
   .filename = NULL,
   .sheet_name = "Sheet 1",
