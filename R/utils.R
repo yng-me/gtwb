@@ -15,12 +15,23 @@ to_int <- function(.value) {
 }
 
 px_to_pt <- function(.px) {
-  to_int(.px) * 0.75
+  if(grepl("px$", .px)) {
+    to_int(.px) * 0.75
+  } else {
+    return(NULL)
+  }
 }
 
 
 percent_to_pt <- function(.px, .percent) {
-  (to_int(.percent) / 100) * px_to_pt(.px)
+
+  if(grepl("%$", .percent)) {
+    px_to_pt(.px) * (to_int(.percent) / 100)
+  } else if(grepl("px$", .percent)) {
+    px_to_pt(.percent)
+  } else {
+    return(NULL)
+  }
 }
 
 
@@ -43,6 +54,8 @@ mark_to_sst <- function(.text) {
       fmt <- "<b/>"
     } else if(v == "<em>") {
       fmt <- "<i/>"
+    } else if(v == "<code>") {
+      fmt <- "<fz value=\"Courier New\" />"
     } else {
       fmt <- ""
     }

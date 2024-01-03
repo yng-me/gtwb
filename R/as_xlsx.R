@@ -229,8 +229,8 @@ as_xlsx <- function(
         halign = "center",
         valign = "center",
         fontSize = percent_to_pt(
-          .px = get_value(.data, "column_labels_font_size"),
-          .percent = get_value(.data, "table_font_size")
+          .px = get_value(.data, "table_font_size"),
+          .percent = get_value(.data, "column_labels_font_size")
         )
       ),
       rows = restart_at,
@@ -245,17 +245,17 @@ as_xlsx <- function(
     sheet = .sheet_name,
     x = df_headers,
     startCol = .start_col + with_stub,
-    startRow = restart_at + nrow(spanners),
+    startRow = restart_at + max(spanners$spanner_level),
     colNames = FALSE
   )
 
   wb |> openxlsx::setRowHeights(
     sheet = .sheet_name,
-    rows = restart_at:(restart_at + nrow(spanners)),
+    rows = restart_at:(restart_at + max(spanners$spanner_level)),
     heights = set_row_height(get_value(.data, "column_labels_padding_horizontal"))
   )
 
-  restart_at <- restart_at + nrow(spanners)
+  restart_at <- restart_at + max(spanners$spanner_level)
 
   col_range <- .start_col:(length(boxhead) + 1)
 
@@ -264,8 +264,8 @@ as_xlsx <- function(
     style = openxlsx::createStyle(
       valign = "center",
       fontSize = percent_to_pt(
-        .px = get_value(.data, "column_labels_font_size"),
-        .percent = get_value(.data, "table_font_size")
+        .px = get_value(.data, "table_font_size"),
+        .percent = get_value(.data, "column_labels_font_size")
       )
     ),
     rows = restart_at,
@@ -282,7 +282,6 @@ as_xlsx <- function(
     row_group <- .data[["_boxhead"]] |>
       dplyr::filter(type == "row_group") |>
       dplyr::pull(var)
-
 
     for(i in seq_along(row_groups)) {
 
@@ -326,8 +325,8 @@ as_xlsx <- function(
           borderStyle = set_border_style(get_value(.data, "row_group_border_top_width")),
           valign = "center",
           fontSize = percent_to_pt(
-            .px = get_value(.data, "row_group_font_size"),
-            .percent = get_value(.data, "table_font_size")
+            .px = get_value(.data, "table_font_size"),
+            .percent = get_value(.data, "row_group_font_size")
           )
         ),
         rows = restart_at + 1,
@@ -459,7 +458,6 @@ as_xlsx <- function(
     )
   }
 
-
   # wb |> openxlsx::setColWidths(
   #   sheet = .sheet_name,
   #   widths = get_value(.data, "table_width"),
@@ -467,16 +465,18 @@ as_xlsx <- function(
   # )
 
   restart_at <- wb |>
-    write_footnotes(
+    write_end_notes(
       .data,
+      .key = "_footnotes",
       .start_col = .start_col,
       .start_row = restart_at,
       sheet = .sheet_name
     )
 
   restart_at <- wb |>
-    write_source_notes(
+    write_end_notes(
       .data,
+      .key = "_source_notes",
       .start_col = .start_col,
       .start_row = restart_at,
       sheet = .sheet_name
