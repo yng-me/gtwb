@@ -2,15 +2,6 @@
 
 An extension of `gt` package for exporting `gt` object in to an Excel workbook using `openxlsx` package.
 
-### DEVELOPMENT IN PROGRESS!
-
-## TODOS:
-- [ ] Output formating/styling (in progress)
-- [ ] Major refactoring
-- [ ] Unit test
-- [ ] Docs
-
-
 ### Installation
 
 ```r

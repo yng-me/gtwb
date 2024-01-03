@@ -21,7 +21,8 @@ Imports:
   dplyr,
   tidyr,
   stringr,
-  openxlsx
+  openxlsx,
+  systemfonts
 Suggests: 
   testthat (>= 3.0.0),
   gt,
