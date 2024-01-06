@@ -286,6 +286,7 @@ as_xlsx <- function(
     for(i in seq_along(row_groups)) {
 
       row_df <- .data[["_data"]] |>
+        add_col_merge(.data[["_col_merge"]], boxhead) |>
         dplyr::filter(!!as.name(row_group) == row_groups[i]) |>
         dplyr::select(dplyr::any_of(boxhead))
 
@@ -335,11 +336,11 @@ as_xlsx <- function(
         stack = TRUE
       )
 
-      wb |> openxlsx::setRowHeights(
-        sheet = .sheet_name,
-        rows = restart_at + 1,
-        heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
-      )
+      # wb |> openxlsx::setRowHeights(
+      #   sheet = .sheet_name,
+      #   rows = restart_at + 1,
+      #   heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
+      # )
 
       wb |> openxlsx::writeData(
         sheet = .sheet_name,
@@ -354,7 +355,8 @@ as_xlsx <- function(
         style = openxlsx::createStyle(
           valign = "center",
           border = "top",
-          borderColour = get_value(.data, "table_body_border_bottom_color")
+          borderColour = get_value(.data, "table_body_border_bottom_color"),
+          wrapText = TRUE
         ),
         rows = (restart_at + 2):(restart_at + nrow(row_df) + 1),
         cols = col_range,
@@ -369,6 +371,7 @@ as_xlsx <- function(
   } else {
 
     df <- .data[["_data"]] |>
+      add_col_merge(.data[["_col_merge"]], boxhead) |>
       dplyr::select(dplyr::any_of(boxhead))
 
     wb |> openxlsx::writeData(
@@ -386,7 +389,8 @@ as_xlsx <- function(
       style = openxlsx::createStyle(
         valign = "center",
         border = "top",
-        borderColour = get_value(.data, "table_body_border_bottom_color")
+        borderColour = get_value(.data, "table_body_border_bottom_color"),
+        wrapText = TRUE
       ),
       rows = data_row_start:(restart_at - 1),
       cols = col_range,
@@ -396,11 +400,11 @@ as_xlsx <- function(
 
   }
 
-  wb |> openxlsx::setRowHeights(
-    sheet = .sheet_name,
-    rows = data_row_start:restart_at,
-    heights = set_row_height(get_value(.data, "data_row_padding_horizontal"))
-  )
+  # wb |> openxlsx::setRowHeights(
+  #   sheet = .sheet_name,
+  #   rows = data_row_start:restart_at,
+  #   heights = set_row_height(get_value(.data, "data_row_padding_horizontal"))
+  # )
 
 
   add_row <- 1
