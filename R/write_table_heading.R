@@ -37,7 +37,7 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
 
     wb |> openxlsx::addStyle(
       style = openxlsx::createStyle(
-        fontSize = percent_to_pt(
+        fontSize = pct_to_pt(
           .px = get_value(.data, "table_font_size"),
           .percent = get_value(.data, "heading_title_font_size")
         ),
@@ -85,7 +85,7 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
 
     wb |> openxlsx::addStyle(
       style = openxlsx::createStyle(
-        fontSize = percent_to_pt(
+        fontSize = pct_to_pt(
           .px = get_value(.data, "table_font_size"),
           .percent = get_value(.data, "heading_subtitle_font_size")
         ),

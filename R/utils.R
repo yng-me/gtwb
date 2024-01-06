@@ -23,7 +23,7 @@ px_to_pt <- function(.px) {
 }
 
 
-percent_to_pt <- function(.px, .percent) {
+pct_to_pt <- function(.px, .percent) {
 
   if(grepl("%$", .percent)) {
     px_to_pt(.px) * (to_int(.percent) / 100)
