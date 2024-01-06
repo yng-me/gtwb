@@ -22,6 +22,7 @@ Imports:
   tidyr,
   stringr,
   openxlsx,
+  glue,
   systemfonts
 Suggests: 
   testthat (>= 3.0.0),
