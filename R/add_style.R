@@ -22,7 +22,7 @@ add_style <- function(wb, .data, .boxhead, .rows, .start_col, .start_row, ...) {
     if(!is.null(fontsize)) {
       fontsize <- pct_to_pt(
         .px = get_value(.data, "table_font_size"),
-        .percent = fontsize
+        .pct = fontsize
       )
     }
 

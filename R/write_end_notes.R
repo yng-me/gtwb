@@ -41,7 +41,7 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, ...) {
       style = openxlsx::createStyle(
         fontSize = pct_to_pt(
           .px = get_value(.data, "table_font_size"),
-          .percent = get_value(.data, var_fontsize)
+          .pct = get_value(.data, var_fontsize)
         ),
         valign = "center"
       ),

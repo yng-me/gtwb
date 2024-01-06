@@ -235,7 +235,7 @@ as_xlsx <- function(
       valign = "center",
       fontSize = pct_to_pt(
         .px = get_value(.data, "table_font_size"),
-        .percent = get_value(.data, "column_labels_font_size")
+        .pct = get_value(.data, "column_labels_font_size")
       )
     ),
     rows = restart_at,
@@ -299,7 +299,7 @@ as_xlsx <- function(
           valign = "center",
           fontSize = pct_to_pt(
             .px = get_value(.data, "table_font_size"),
-            .percent = get_value(.data, "row_group_font_size")
+            .pct = get_value(.data, "row_group_font_size")
           )
         ),
         rows = restart_at + 1,

@@ -39,7 +39,7 @@ write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, ...) {
           valign = "center",
           fontSize = pct_to_pt(
             .px = get_value(.data, "table_font_size"),
-            .percent = get_value(.data, "column_labels_font_size")
+            .pct = get_value(.data, "column_labels_font_size")
           )
         ),
         rows = restart_at,
