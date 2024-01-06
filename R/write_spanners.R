@@ -2,6 +2,9 @@ write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, ...) {
 
   restart_at <- .start_row
   spanners <- .data[["_spanners"]]
+
+  if(nrow(spanners) == 0) return(invisible())
+
   spanner_levels <- rev(1:max(spanners$spanner_level))
 
   for(i in seq_along(spanner_levels)) {
@@ -34,9 +37,9 @@ write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, ...) {
           borderStyle = set_border_style(get_value(.data, "column_labels_border_bottom_width")),
           halign = "center",
           valign = "center",
-          fontSize = percent_to_pt(
+          fontSize = pct_to_pt(
             .px = get_value(.data, "table_font_size"),
-            .percent = get_value(.data, "column_labels_font_size")
+            .pct = get_value(.data, "column_labels_font_size")
           )
         ),
         rows = restart_at,

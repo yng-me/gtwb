@@ -23,12 +23,12 @@ px_to_pt <- function(.px) {
 }
 
 
-percent_to_pt <- function(.px, .percent) {
+pct_to_pt <- function(.px, .pct) {
 
-  if(grepl("%$", .percent)) {
-    px_to_pt(.px) * (to_int(.percent) / 100)
-  } else if(grepl("px$", .percent)) {
-    px_to_pt(.percent)
+  if(grepl("%$", .pct)) {
+    px_to_pt(.px) * (to_int(.pct) / 100)
+  } else if(grepl("px$", .pct)) {
+    px_to_pt(.pct)
   } else {
     return(NULL)
   }

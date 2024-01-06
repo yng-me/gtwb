@@ -233,9 +233,9 @@ as_xlsx <- function(
     sheet = .sheet_name,
     style = openxlsx::createStyle(
       valign = "center",
-      fontSize = percent_to_pt(
+      fontSize = pct_to_pt(
         .px = get_value(.data, "table_font_size"),
-        .percent = get_value(.data, "column_labels_font_size")
+        .pct = get_value(.data, "column_labels_font_size")
       )
     ),
     rows = restart_at,
@@ -252,6 +252,8 @@ as_xlsx <- function(
     row_group <- .data[["_boxhead"]] |>
       dplyr::filter(type == "row_group") |>
       dplyr::pull(var)
+
+    data_row_start_p <- data_row_start
 
     for(i in seq_along(row_groups)) {
 
@@ -295,9 +297,9 @@ as_xlsx <- function(
           borderColour = get_value(.data, "row_group_border_top_color"),
           borderStyle = set_border_style(get_value(.data, "row_group_border_top_width")),
           valign = "center",
-          fontSize = percent_to_pt(
+          fontSize = pct_to_pt(
             .px = get_value(.data, "table_font_size"),
-            .percent = get_value(.data, "row_group_font_size")
+            .pct = get_value(.data, "row_group_font_size")
           )
         ),
         rows = restart_at + 1,
@@ -334,7 +336,24 @@ as_xlsx <- function(
         stack = TRUE
       )
 
+      rows <- .data[["_data"]] |>
+        tibble::rownames_to_column() |>
+        dplyr::filter(!!as.name(row_group) == row_groups[i]) |>
+        pull(rowname)
+
+
+
+      wb |> add_style(
+        .data,
+        .boxhead = boxhead,
+        .rows = rows,
+        .start_col = .start_col,
+        .start_row = data_row_start_p,
+        sheet = .sheet_name
+      )
+
       restart_at <- restart_at + nrow(row_df) + 1
+      data_row_start_p <- data_row_start_p + 1
 
     }
 
