@@ -16,10 +16,9 @@ add_col_merge <- function(.data, .col_merge, .boxhead, ...) {
       pattern_new <- stringr::str_replace(pattern_new, y, var)
     }
 
-    pattern_new <- stringr::str_remove_all(
-      str_replace_all(pattern_new, "<br\\/?>", "\n"),
-      "(>|<)+"
-    )
+    pattern_new <- pattern_new |>
+      stringr::str_replace_all("\\s*<br\\s?\\/?>\\s*", "\n") |>
+      stringr::str_remove_all("(>|<)+")
 
     col_selected <- .boxhead[.boxhead %in% vars]
 

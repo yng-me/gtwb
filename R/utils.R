@@ -61,12 +61,11 @@ mark_to_sst <- function(.text) {
     return(fmt)
   }
 
-  text_as_html <- stringr::str_remove_all(
-    stringr::str_remove_all(
-      stringr::str_trim(markdown::mark(.text)), "(~~~|</?p>|\\n*)"
-    ),
-    '(^<si><t xml\\:space\\=\\"preserve\\">|</t></si>$)'
-  )
+  text_as_html <- .text |>
+    markdown::mark() |>
+    stringr::str_trim() |>
+    stringr::str_remove_all("(~~~|</?p>|\\n*$)") |>
+    stringr::str_remove_all('(^<si><t xml\\:space\\=\\"preserve\\">|</t></si>$)')
 
   if(length(stringr::str_extract_all(text_as_html, "<(strong|em)>")[[1]]) == 0) {
     return(stringr::str_remove_all(.text, "~~~"))
@@ -90,7 +89,7 @@ mark_to_sst <- function(.text) {
       v2 <- paste0(
         '<r><rPr>',
         get_emp(text_splits[i]),
-        '</rPr><t xml:space="preserve">',
+        '</rPr><t>',
         v[2],
         "</t></r>"
       )
@@ -99,7 +98,10 @@ mark_to_sst <- function(.text) {
 
     } else {
 
-      new_text_format <- c(new_text_format, paste0('<r><t xml:space="preserve">', v, "</t></r>"))
+      new_text_format <- c(
+        new_text_format,
+        paste0('<r><t xml:space="preserve">', v, "</t></r>")
+      )
     }
 
   }

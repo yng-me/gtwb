@@ -1,4 +1,4 @@
-write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...) {
+write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, .facade, ...) {
 
   restart_at <- .start_row
   title <- .data[["_heading"]]$title
@@ -35,21 +35,20 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
     valign_title <- "center"
     if(!is.null(subtitle)) valign_title <- "bottom"
 
-    wb |> openxlsx::addStyle(
-      style = openxlsx::createStyle(
-        fontSize = pct_to_pt(
-          .px = get_value(.data, "table_font_size"),
-          .pct = get_value(.data, "heading_title_font_size")
+    .facade <- .facade |>
+      add_facade(
+        style = openxlsx::createStyle(
+          fontSize = pct_to_pt(
+            .px = get_value(.data, "table_font_size"),
+            .pct = get_value(.data, "heading_title_font_size")
+          ),
+          halign = get_value(.data, "heading_align"),
+          valign = valign_title
         ),
-        halign = get_value(.data, "heading_align"),
-        valign = valign_title
-      ),
-      rows = .start_row,
-      cols = .start_col,
-      gridExpand = TRUE,
-      stack = TRUE,
-      ...
-    )
+        rows = .start_row,
+        cols = .start_col,
+        ...
+      )
 
   }
 
@@ -83,37 +82,40 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, ...
     valign_subtitle <- "center"
     if(!is.null(title)) valign_subtitle <- "top"
 
-    wb |> openxlsx::addStyle(
-      style = openxlsx::createStyle(
-        fontSize = pct_to_pt(
-          .px = get_value(.data, "table_font_size"),
-          .pct = get_value(.data, "heading_subtitle_font_size")
+    .facade <- .facade |>
+      add_facade(
+        style = openxlsx::createStyle(
+          fontSize = pct_to_pt(
+            .px = get_value(.data, "table_font_size"),
+            .pct = get_value(.data, "heading_subtitle_font_size")
+          ),
+          halign = get_value(.data, "heading_align"),
+          valign = valign_subtitle
         ),
-        halign = get_value(.data, "heading_align"),
-        valign = valign_subtitle
-      ),
-      rows = .start_row + 1,
-      cols = .start_col,
-      gridExpand = TRUE,
-      stack = TRUE,
-      ...
-    )
+        rows = .start_row + 1,
+        cols = .start_col,
+        ...
+      )
 
   }
 
-  wb |> openxlsx::addStyle(
-    style = openxlsx::createStyle(
-      border = "top",
-      borderColour = get_value(.data, "heading_border_bottom_color"),
-      borderStyle = set_border_style(get_value(.data, "heading_border_bottom_width"))
-    ),
-    rows = restart_at,
-    cols = col_range,
-    gridExpand = TRUE,
-    stack = TRUE,
-    ...
-  )
+  .facade <- .facade |>
+    add_facade(
+      style = openxlsx::createStyle(
+        border = "top",
+        borderColour = get_value(.data, "heading_border_bottom_color"),
+        borderStyle = set_border_style(get_value(.data, "heading_border_bottom_width"))
+      ),
+      rows = restart_at,
+      cols = col_range,
+      ...
+    )
 
-  return(restart_at)
+  return(
+    list(
+      restart_at = restart_at,
+      facade = .facade
+    )
+  )
 
 }

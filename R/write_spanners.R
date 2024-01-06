@@ -1,4 +1,4 @@
-write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, ...) {
+write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, .facade, ...) {
 
   restart_at <- .start_row
   spanners <- .data[["_spanners"]]
@@ -30,28 +30,29 @@ write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, ...) {
         ...
       )
 
-      wb |> openxlsx::addStyle(
-        style = openxlsx::createStyle(
-          border = "bottom",
-          borderColour = get_value(.data, "column_labels_border_bottom_color"),
-          borderStyle = set_border_style(get_value(.data, "column_labels_border_bottom_width")),
-          halign = "center",
-          valign = "center",
-          fontSize = pct_to_pt(
-            .px = get_value(.data, "table_font_size"),
-            .pct = get_value(.data, "column_labels_font_size")
-          )
-        ),
-        rows = restart_at,
-        cols = span_cols + .start_col - 1,
-        gridExpand = TRUE,
-        stack = TRUE,
-        ...
-      )
+      .facade <- .facade |>
+        add_facade(
+          style = openxlsx::createStyle(
+            border = "bottom",
+            borderColour = get_value(.data, "column_labels_border_bottom_color"),
+            borderStyle = set_border_style(get_value(.data, "column_labels_border_bottom_width")),
+            halign = "center",
+            valign = "center",
+            fontSize = pct_to_pt(
+              .px = get_value(.data, "table_font_size"),
+              .pct = get_value(.data, "column_labels_font_size")
+            )
+          ),
+          rows = restart_at,
+          cols = span_cols + .start_col - 1,
+          ...
+        )
 
     }
 
     restart_at <- restart_at + 1
   }
+
+  return(.facade)
 
 }

@@ -1,4 +1,4 @@
-add_style <- function(wb, .data, .boxhead, .rows, .start_col, .start_row, ...) {
+add_styles <- function(.data, .boxhead, .rows, .start_col, .start_row, .facade, ...) {
 
   styles <- .data[["_styles"]] |>
     dplyr::filter(locname == "data")
@@ -26,17 +26,13 @@ add_style <- function(wb, .data, .boxhead, .rows, .start_col, .start_row, ...) {
       )
     }
 
-    wb |> openxlsx::addStyle(
-      style = openxlsx::createStyle(
-        fontSize = fontsize,
-        wrapText = TRUE
-      ),
-      rows = style$rownum + .start_row,
-      cols = col_which + .start_col - 1,
-      gridExpand = TRUE,
-      stack = TRUE,
-      ...
-    )
+    .facade <- .facade |>
+      add_facade(
+        style = openxlsx::createStyle( fontSize = fontsize, wrapText = TRUE),
+        rows = style$rownum + .start_row,
+        cols = col_which + .start_col - 1,
+        ...
+      )
   }
 
 }
