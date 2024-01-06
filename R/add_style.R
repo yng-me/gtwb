@@ -26,8 +26,6 @@ add_style <- function(wb, .data, .boxhead, .rows, .start_col, .start_row, ...) {
       )
     }
 
-    print(style$rownum + .start_row)
-
     wb |> openxlsx::addStyle(
       style = openxlsx::createStyle(
         fontSize = fontsize,
