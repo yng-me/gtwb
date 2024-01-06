@@ -186,6 +186,14 @@ as_xlsx <- function(
       sheet = .sheet_name
     )
 
+  wb |> write_spanners(
+    .data,
+    .boxhead = boxhead,
+    .start_col = .start_col,
+    .start_row = restart_at,
+    sheet = .sheet_name
+  )
+
   df_headers <- .data[["_boxhead"]] |>
     dplyr::filter(type == "default") |>
     tidyr::unnest(column_label) |>
@@ -201,61 +209,23 @@ as_xlsx <- function(
     with_stub <- 1
   }
 
-  spanners <- .data[["_spanners"]]
-
-  for(i in seq_along(spanners$spanner_id)) {
-
-    span_cols <- which(boxhead %in% spanners$vars[[1]])
-
-    wb |> openxlsx::writeData(
-      sheet = .sheet_name,
-      x = spanners$spanner_label[i],
-      startCol = span_cols[1] + .start_col - 1,
-      startRow = restart_at,
-    )
-
-    wb |> openxlsx::mergeCells(
-      sheet = .sheet_name,
-      rows = restart_at,
-      cols = span_cols + .start_col - 1
-    )
-
-    wb |> openxlsx::addStyle(
-      sheet = .sheet_name,
-      style = openxlsx::createStyle(
-        border = "bottom",
-        borderColour = get_value(.data, "column_labels_border_bottom_color"),
-        borderStyle = set_border_style(get_value(.data, "column_labels_border_bottom_width")),
-        halign = "center",
-        valign = "center",
-        fontSize = percent_to_pt(
-          .px = get_value(.data, "table_font_size"),
-          .percent = get_value(.data, "column_labels_font_size")
-        )
-      ),
-      rows = restart_at,
-      cols = span_cols + .start_col - 1,
-      gridExpand = TRUE,
-      stack = TRUE
-    )
-
-  }
+  spanner_level <- max(.data[["_spanners"]]$spanner_level)
 
   wb |> openxlsx::writeData(
     sheet = .sheet_name,
     x = df_headers,
     startCol = .start_col + with_stub,
-    startRow = restart_at + max(spanners$spanner_level),
+    startRow = restart_at + spanner_level,
     colNames = FALSE
   )
 
   wb |> openxlsx::setRowHeights(
     sheet = .sheet_name,
-    rows = restart_at:(restart_at + max(spanners$spanner_level)),
+    rows = restart_at:(restart_at + spanner_level),
     heights = set_row_height(get_value(.data, "column_labels_padding_horizontal"))
   )
 
-  restart_at <- restart_at + max(spanners$spanner_level)
+  restart_at <- restart_at + spanner_level
 
   col_range <- .start_col:(length(boxhead) + 1)
 
@@ -336,11 +306,11 @@ as_xlsx <- function(
         stack = TRUE
       )
 
-      # wb |> openxlsx::setRowHeights(
-      #   sheet = .sheet_name,
-      #   rows = restart_at + 1,
-      #   heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
-      # )
+      wb |> openxlsx::setRowHeights(
+        sheet = .sheet_name,
+        rows = restart_at + 1,
+        heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
+      )
 
       wb |> openxlsx::writeData(
         sheet = .sheet_name,
