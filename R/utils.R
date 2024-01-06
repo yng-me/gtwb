@@ -23,17 +23,16 @@ px_to_pt <- function(.px) {
 }
 
 
-pct_to_pt <- function(.px, .pct) {
+pct_to_pt <- function(.px, .pct, .factor = 1) {
 
   if(grepl("%$", .pct)) {
-    px_to_pt(.px) * (to_int(.pct) / 100)
+    (px_to_pt(.px) * (to_int(.pct) / 100)) * .factor
   } else if(grepl("px$", .pct)) {
-    px_to_pt(.pct)
+    px_to_pt(.pct) * .factor
   } else {
     return(NULL)
   }
 }
-
 
 set_row_height <- function(.px) {
   16 + (px_to_pt(.px) * 2)

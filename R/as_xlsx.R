@@ -435,12 +435,18 @@ as_xlsx <- function(
     stack = TRUE
   )
 
+  wb |> openxlsx::setColWidths(
+    sheet = .sheet_name,
+    widths = get_value(.data, "table_width"),
+    cols = (.start_col + 1):(length(boxhead) + 1)
+  )
+
   for(i in seq_along(boxhead)) {
 
-    col_align <- .data[["_boxhead"]] |>
-      dplyr::filter(var == boxhead[i]) |>
-      dplyr::pull(column_align)
+    col_selected <- .data[["_boxhead"]] |>
+      dplyr::filter(var == boxhead[i])
 
+    col_align <- col_selected |> dplyr::pull(column_align)
     wb |> openxlsx::addStyle(
       sheet = .sheet_name,
       style = openxlsx::createStyle(halign = col_align[1]),
@@ -449,13 +455,20 @@ as_xlsx <- function(
       gridExpand = TRUE,
       stack = TRUE
     )
+
+    col_width <- col_selected |> dplyr::pull(column_width)
+
+    wb |> setColWidths(
+      sheet = .sheet_name,
+      widths = pct_to_pt(
+        .px = get_value(.data, "table_font_size"),
+        .pct = unlist(col_width),
+        .factor = 1/5
+      ),
+      cols = i + .start_col - 1
+    )
   }
 
-  # wb |> openxlsx::setColWidths(
-  #   sheet = .sheet_name,
-  #   widths = get_value(.data, "table_width"),
-  #   cols = col_range
-  # )
 
   restart_at <- wb |>
     write_end_notes(
