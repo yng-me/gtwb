@@ -551,9 +551,6 @@ as_xlsx <- function(
   wb |> apply_facade(gtx_facade)
   wb |> update_shared_strings(gtx_facade)
 
-  assign("wb", wb, envir = globalenv())
-  assign("fcd", gtx_facade, envir = globalenv())
-
   wb |> openxlsx::saveWorkbook(
     file = set_filename(.filename, .data[["_heading"]]),
     overwrite = .overwrite
