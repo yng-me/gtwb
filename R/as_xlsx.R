@@ -214,7 +214,10 @@ as_xlsx <- function(
     with_stub <- 1
   }
 
-  spanner_level <- max(.data[["_spanners"]]$spanner_level)
+  spanner_level <- 0
+  if(nrow(.data[["_spanners"]])) {
+    spanner_level <- max(.data[["_spanners"]]$spanner_level)
+  }
 
   wb |> openxlsx::writeData(
     sheet = .sheet_name,
@@ -260,23 +263,25 @@ as_xlsx <- function(
 
     data_row_start_p <- data_row_start
 
+    row_df_all <- .data[["_data"]] |>
+      tibble::rownames_to_column(var = "__row_number__") |>
+      add_formats(.data[["_formats"]])
+
     for(i in seq_along(row_groups)) {
 
-      row_df <- .data[["_data"]] |>
-        tibble::rownames_to_column(var = "__row_number__") |>
-        add_col_merge(
-          .data[["_col_merge"]],
-          .boxhead = boxhead,
-          .start_row = restart_at + 1,
-          .start_col = .start_col
-        ) |>
+      row_df <- row_df_all |>
         add_transforms(
           .data[["_transforms"]],
           .boxhead = boxhead,
           .start_row = data_row_start_p,
           .start_col = .start_col
         ) |>
-        add_formats(.data[["_formats"]]) |>
+        add_col_merge(
+          .data[["_col_merge"]],
+          .boxhead = boxhead,
+          .start_row = restart_at + 1,
+          .start_col = .start_col
+        ) |>
         dplyr::filter(!!as.name(row_group) == row_groups[i]) |>
         dplyr::select(dplyr::any_of(boxhead)) |>
         dplyr::select(-dplyr::any_of("__row_number__"))
@@ -382,19 +387,19 @@ as_xlsx <- function(
 
     df <- .data[["_data"]] |>
       tibble::rownames_to_column(var = "__row_number__") |>
-      add_col_merge(
-        .data[["_col_merge"]],
-        .boxhead = boxhead,
-        .start_row = restart_at + 1,
-        .start_col = .start_col
-      ) |>
+      add_formats(.data[["_formats"]]) |>
       add_transforms(
         .data[["_transforms"]],
         .boxhead = boxhead,
         .start_row = restart_at + 1,
         .start_col = .start_col
       ) |>
-      add_formats(.data[["_formats"]]) |>
+      add_col_merge(
+        .data[["_col_merge"]],
+        .boxhead = boxhead,
+        .start_row = restart_at + 1,
+        .start_col = .start_col
+      ) |>
       dplyr::select(dplyr::any_of(boxhead)) |>
       dplyr::select(-dplyr::any_of("__row_number__"))
 

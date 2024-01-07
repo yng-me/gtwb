@@ -15,14 +15,12 @@ update_shared_strings <- function(wb, .facade, ...) {
   for(i in seq_along(.facade)) {
     fcd <- .facade[[i]]
     if(length(fcd$sst) > 0) {
-
       for(j in seq_along(fcd$rows)) {
         for(k in seq_along(fcd$cols)) {
           fcd_name <- paste0("\\[", fcd$rows[j], "\\,", fcd$cols[k], "\\]~~~")
           fcd_with_sst[[fcd_name]] <- fcd$sst
         }
       }
-
     }
   }
 
