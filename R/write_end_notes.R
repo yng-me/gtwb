@@ -1,6 +1,7 @@
-write_end_notes <- function(wb, .data, .key, .start_row, .start_col, ...) {
+write_end_notes <- function(wb, .data, .key, .start_row, .start_col, .facade, ...) {
 
   restart_at <- .start_row
+
   end_notes <- .data[[.key]]
   if(.key == "_footnotes") {
     with_end_note <- isTRUE(!is.null(end_notes) & nrow(end_notes) > 0)
@@ -27,7 +28,7 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, ...) {
     note <- notes[[i]]
 
     if("from_markdown" %in% class(note)) {
-      note <- paste0("~~~", note[1])
+      note <- paste0("[", restart_at, ",", .start_col, "]~~~", note[1])
     }
 
     wb |> openxlsx::writeData(
@@ -37,20 +38,22 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, ...) {
       ...
     )
 
-    wb |> openxlsx::addStyle(
-      style = openxlsx::createStyle(
-        fontSize = pct_to_pt(
-          .px = get_value(.data, "table_font_size"),
-          .pct = get_value(.data, var_fontsize)
-        ),
-        valign = "center"
-      ),
-      rows = restart_at,
-      cols = .start_col,
-      gridExpand = TRUE,
-      stack = TRUE,
-      ...
+    fz <- pct_to_pt(
+      .px = get_value(.data, "table_font_size"),
+      .pct = get_value(.data, var_fontsize)
     )
+
+    .facade <- .facade |>
+      add_facade(
+        style = openxlsx::createStyle(
+          fontSize = fz,
+          valign = "center"
+        ),
+        rows = restart_at,
+        cols = .start_col,
+        sst = list(fz = fz),
+        ...
+      )
 
     restart_at <- restart_at + 1
 
@@ -62,6 +65,11 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, ...) {
     ...
   )
 
-  return(restart_at)
+  return(
+    list(
+      restart_at = restart_at,
+      facade = .facade
+    )
+  )
 
 }
