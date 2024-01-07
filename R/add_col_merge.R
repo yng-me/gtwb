@@ -2,6 +2,13 @@ add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 
 
   if(length(.col_merge) == 0) return(.data)
 
+  clean_glue <- function(.x) {
+    .x |>
+      stringr::str_remove_all("<<\\s*\\-\\s*>>") |>
+      stringr::str_remove_all("(>|<)+") |>
+      stringr::str_remove_all("\\(\\)")
+  }
+
   for(i in seq_along(.col_merge)) {
 
     merge <- .col_merge[[i]]
@@ -13,7 +20,7 @@ add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 
 
     for(j in seq_along(v)) {
       y <- stringr::str_extract_all(v[j], "\\d+")[[1]]
-      var <- vars[as.integer(y)]
+      var <- paste0("`", vars[as.integer(y)], "`")
       pattern_new <- stringr::str_replace(pattern_new, y, var)
     }
 
@@ -22,8 +29,7 @@ add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 
     }
 
     pattern_new <- pattern_new |>
-      stringr::str_replace_all("\\s*<br\\s?\\/?>\\s*", "\n") |>
-      stringr::str_remove_all("(>|<)+")
+      stringr::str_replace_all("\\s*<br\\s?\\/?>\\s*", "\n")
 
     col_selected <- .boxhead[.boxhead %in% vars]
 
@@ -32,7 +38,7 @@ add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 
         dplyr::mutate(
           !!as.name(col_selected[1]) := dplyr::if_else(
             as.integer(`__row_number__`) %in% merge$rows,
-            as.character(glue::glue(pattern_new)),
+            clean_glue(as.character(glue::glue(pattern_new, .na = ""))),
             as.character(!!as.name(col_selected[1]))
           )
         )

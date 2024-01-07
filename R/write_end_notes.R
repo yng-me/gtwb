@@ -3,6 +3,7 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, .facade, ..
   restart_at <- .start_row
 
   end_notes <- .data[[.key]]
+
   if(.key == "_footnotes") {
     with_end_note <- isTRUE(!is.null(end_notes) & nrow(end_notes) > 0)
     notes <- end_notes$footnotes
@@ -10,10 +11,20 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, .facade, ..
     with_end_note <- isTRUE(!is.null(end_notes) & length(end_notes) > 0)
     notes <- end_notes
   } else {
-    return(restart_at)
+    return(
+      list(
+        facade = .facade,
+        restart_at = restart_at
+      )
+    )
   }
 
-  if(!with_end_note) return(restart_at)
+  if(!with_end_note) return(
+    list(
+      facade = .facade,
+      restart_at = restart_at
+    )
+  )
 
   if(.key == "_footnotes") {
     restart_at <- .start_row + 1
