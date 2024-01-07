@@ -8,7 +8,7 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, .fa
   if(!is.null(title)) {
 
     if("from_markdown" %in% class(title)) {
-      title <- paste0("~~~", title[1])
+      title <- paste0("[", .start_row, ",", .start_col, "]~~~", title[1])
     }
 
     restart_at <- restart_at + 1
@@ -35,18 +35,21 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, .fa
     valign_title <- "center"
     if(!is.null(subtitle)) valign_title <- "bottom"
 
+    fz <- pct_to_pt(
+      .px = get_value(.data, "table_font_size"),
+      .pct = get_value(.data, "heading_title_font_size")
+    )
+
     .facade <- .facade |>
       add_facade(
         style = openxlsx::createStyle(
-          fontSize = pct_to_pt(
-            .px = get_value(.data, "table_font_size"),
-            .pct = get_value(.data, "heading_title_font_size")
-          ),
+          fontSize = fz,
           halign = get_value(.data, "heading_align"),
           valign = valign_title
         ),
         rows = .start_row,
         cols = .start_col,
+        sst = list(fz = fz),
         ...
       )
 
@@ -54,11 +57,11 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, .fa
 
   if(!is.null(subtitle)) {
 
-    if("from_markdown" %in% class(subtitle)) {
-      subtitle <- paste0("~~~", subtitle[1])
-    }
-
     restart_at <- restart_at + 1
+
+    if("from_markdown" %in% class(subtitle)) {
+      subtitle <- paste0("[", .start_row + 1, ",", .start_col, "]~~~", subtitle[1])
+    }
 
     wb |> openxlsx::writeData(
       ...,

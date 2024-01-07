@@ -161,19 +161,17 @@ as_xlsx <- function(
 
   wb <- openxlsx::createWorkbook()
 
-  wb |> modifyBaseFont(
-    fontColour = get_value(.data, "table_font_color"),
-    fontSize = px_to_pt(get_value(.data, "table_font_size")),
-    fontName = get_font_family(.data)
-  )
-
   wb |> openxlsx::addWorksheet(
     .sheet_name,
     gridLines = FALSE,
     orientation = get_value(.data, "page_orientation")
   )
 
-  wb_style <- wb
+  wb |> modifyBaseFont(
+    fontColour = get_value(.data, "table_font_color"),
+    fontSize = px_to_pt(get_value(.data, "table_font_size")),
+    fontName = get_font_family(.data)
+  )
 
   boxhead <- .data[["_boxhead"]] |>
     dplyr::filter(type %in% c("stub", "default")) |>
@@ -263,10 +261,22 @@ as_xlsx <- function(
     for(i in seq_along(row_groups)) {
 
       row_df <- .data[["_data"]] |>
-        add_col_merge(.data[["_col_merge"]], boxhead) |>
-        add_transforms(.data[["_transforms"]]) |>
+        tibble::rownames_to_column(var = "__row_number__") |>
+        add_col_merge(
+          .data[["_col_merge"]],
+          .boxhead = boxhead,
+          .start_row = restart_at + 1,
+          .start_col = .start_col
+        ) |>
+        add_transforms(
+          .data[["_transforms"]],
+          .boxhead = boxhead,
+          .start_row = data_row_start_p,
+          .start_col = .start_col
+        ) |>
         dplyr::filter(!!as.name(row_group) == row_groups[i]) |>
-        dplyr::select(dplyr::any_of(boxhead))
+        dplyr::select(dplyr::any_of(boxhead)) |>
+        dplyr::select(-dplyr::any_of("__row_number__"))
 
       # Row group
       wb |> openxlsx::writeData(
@@ -288,7 +298,8 @@ as_xlsx <- function(
           style = openxlsx::createStyle(
             border = "bottom",
             borderColour = get_value(.data, "row_group_border_bottom_color"),
-            borderStyle = set_border_style(get_value(.data, "row_group_border_bottom_width"))
+            borderStyle = set_border_style(get_value(.data, "row_group_border_bottom_width")),
+            wrapText = TRUE
           ),
           rows = restart_at + 1,
           cols = .start_col:(ncol(row_df) + 1),
@@ -362,9 +373,22 @@ as_xlsx <- function(
   } else {
 
     df <- .data[["_data"]] |>
-      add_col_merge(.data[["_col_merge"]], boxhead) |>
-      add_transforms(.data[["_transforms"]]) |>
-      dplyr::select(dplyr::any_of(boxhead))
+      tibble::rownames_to_column(var = "__row_number__") |>
+      add_col_merge(
+        .data[["_col_merge"]],
+        .boxhead = boxhead,
+        .start_row = restart_at + 1,
+        .start_col = .start_col
+      ) |>
+      add_transforms(
+        .data[["_transforms"]],
+        .boxhead = boxhead,
+        .start_row = restart_at + 1,
+        .start_col = .start_col
+      ) |>
+      dplyr::select(dplyr::any_of(boxhead)) |>
+      dplyr::select(-dplyr::any_of("__row_number__"))
+
 
     wb |> openxlsx::writeData(
       sheet = .sheet_name,
@@ -425,7 +449,8 @@ as_xlsx <- function(
       style = openxlsx::createStyle(
         border = "bottom",
         borderColour = get_value(.data, "table_body_border_bottom_color"),
-        borderStyle = set_border_style(get_value(.data, "table_body_border_bottom_width"))
+        borderStyle = set_border_style(get_value(.data, "table_body_border_bottom_width")),
+        wrapText = TRUE
       ),
       rows = restart_at - add_row,
       cols = col_range,
@@ -486,6 +511,8 @@ as_xlsx <- function(
       sheet = .sheet_name
     )
 
+  restart_at <- from_source_notes$restart_at
+
   # Top border style
   gtx_facade <- from_source_notes$facade |>
     add_facade(
@@ -521,10 +548,11 @@ as_xlsx <- function(
     )
   }
 
-  wb |> update_shared_strings()
   wb |> apply_facade(gtx_facade)
+  wb |> update_shared_strings(gtx_facade)
 
-  assign('gtx_facade', gtx_facade, envir = globalenv())
+  assign("wb", wb, envir = globalenv())
+  assign("fcd", gtx_facade, envir = globalenv())
 
   wb |> openxlsx::saveWorkbook(
     file = set_filename(.filename, .data[["_heading"]]),

@@ -17,22 +17,27 @@ add_styles <- function(.data, .boxhead, .rows, .start_col, .start_row, .facade, 
       dplyr::filter(colname == col) |>
       dplyr::filter(rownum %in% as.integer(.rows))
 
-    fontsize <- style$styles[[1]]$cell_text$size
+    fz <- style$styles[[1]]$cell_text$size
 
-    if(!is.null(fontsize)) {
-      fontsize <- pct_to_pt(
+    sst <- list()
+    if(!is.null(fz)) {
+      fz <- pct_to_pt(
         .px = get_value(.data, "table_font_size"),
-        .pct = fontsize
+        .pct = fz
       )
+      sst <- list(fz = fz)
     }
 
     .facade <- .facade |>
       add_facade(
-        style = openxlsx::createStyle( fontSize = fontsize, wrapText = TRUE),
+        style = openxlsx::createStyle(fontSize = fz, wrapText = TRUE),
         rows = style$rownum + .start_row,
         cols = col_which + .start_col - 1,
+        sst = sst,
         ...
       )
   }
+
+  return(.facade)
 
 }

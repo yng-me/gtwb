@@ -1,4 +1,4 @@
-add_col_merge <- function(.data, .col_merge, .boxhead, ...) {
+add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col, ...) {
 
   if(length(.col_merge) == 0) return(.data)
 
@@ -10,6 +10,7 @@ add_col_merge <- function(.data, .col_merge, .boxhead, ...) {
     vars <- merge$vars
 
     v <- stringr::str_extract_all(pattern, '\\{.*?\\}')[[1]]
+
     for(j in seq_along(v)) {
       y <- stringr::str_extract_all(v[j], "\\d+")[[1]]
       var <- vars[as.integer(y)]
@@ -24,7 +25,13 @@ add_col_merge <- function(.data, .col_merge, .boxhead, ...) {
 
     if(length(col_selected) > 0) {
       .data <- .data |>
-        dplyr::mutate(!!as.name(col_selected[1]) := glue::glue(pattern_new))
+        dplyr::mutate(
+          !!as.name(col_selected[1]) := dplyr::if_else(
+            as.integer(`__row_number__`) %in% merge$rows,
+            as.character(glue::glue(pattern_new)),
+            as.character(!!as.name(col_selected[1]))
+          )
+        )
     }
 
   }
