@@ -1,4 +1,4 @@
-add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col, ...) {
+add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 2, ...) {
 
   if(length(.col_merge) == 0) return(.data)
 
@@ -15,6 +15,10 @@ add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col, .
       y <- stringr::str_extract_all(v[j], "\\d+")[[1]]
       var <- vars[as.integer(y)]
       pattern_new <- stringr::str_replace(pattern_new, y, var)
+    }
+
+    if(grepl("<br\\s?\\/?>", pattern_new)) {
+      attr(.data, "row_heights") <- merge$rows + .start_row
     }
 
     pattern_new <- pattern_new |>

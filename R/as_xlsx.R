@@ -250,6 +250,8 @@ as_xlsx <- function(
   data_row_start <- restart_at + 1
   row_groups <- .data[["_row_groups"]]
 
+  rows_with_height <- NULL
+
   if(length(row_groups) > 0) {
 
     row_group <- .data[["_boxhead"]] |>
@@ -328,6 +330,11 @@ as_xlsx <- function(
         rows = restart_at + 1,
         heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
       )
+
+      rows_attr <- attributes(row_df)$row_heights
+      if(!is.null(rows_attr)) {
+        rows_with_height <- c(rows_with_height, rows_attr[1:nrow(row_df)])
+      }
 
       wb |> openxlsx::writeData(
         sheet = .sheet_name,
@@ -414,11 +421,16 @@ as_xlsx <- function(
       )
   }
 
-  # wb |> openxlsx::setRowHeights(
-  #   sheet = .sheet_name,
-  #   rows = data_row_start:restart_at,
-  #   heights = set_row_height(get_value(.data, "data_row_padding_horizontal"))
-  # )
+  if(!is.null(rows_with_height)) {
+    wb |> openxlsx::setRowHeights(
+      sheet = .sheet_name,
+      rows = rows_with_height,
+      heights = set_row_height(
+        get_value(.data, "data_row_padding_horizontal"),
+        .factor = 1.3
+      )
+    )
+  }
 
   add_row <- 1
   if(nrow(.data[["_footnotes"]]) > 0) {
