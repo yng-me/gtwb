@@ -421,17 +421,6 @@ as_xlsx <- function(
       )
   }
 
-  if(!is.null(rows_with_height)) {
-    wb |> openxlsx::setRowHeights(
-      sheet = .sheet_name,
-      rows = rows_with_height,
-      heights = set_row_height(
-        get_value(.data, "data_row_padding_horizontal"),
-        .factor = 1.3
-      )
-    )
-  }
-
   add_row <- 1
   if(nrow(.data[["_footnotes"]]) > 0) {
     add_row <- 0
@@ -557,6 +546,17 @@ as_xlsx <- function(
       sheet = .sheet_name,
       widths = 2,
       cols = 1
+    )
+  }
+
+  if(!is.null(rows_with_height)) {
+    wb |> openxlsx::setRowHeights(
+      sheet = .sheet_name,
+      rows = rows_with_height,
+      heights = set_row_height(
+        get_value(.data, "data_row_padding_horizontal"),
+        .factor = 1.5
+      )
     )
   }
 
