@@ -276,6 +276,7 @@ as_xlsx <- function(
           .start_row = data_row_start_p,
           .start_col = .start_col
         ) |>
+        add_formats(.data[["_formats"]]) |>
         dplyr::filter(!!as.name(row_group) == row_groups[i]) |>
         dplyr::select(dplyr::any_of(boxhead)) |>
         dplyr::select(-dplyr::any_of("__row_number__"))
@@ -393,6 +394,7 @@ as_xlsx <- function(
         .start_row = restart_at + 1,
         .start_col = .start_col
       ) |>
+      add_formats(.data[["_formats"]]) |>
       dplyr::select(dplyr::any_of(boxhead)) |>
       dplyr::select(-dplyr::any_of("__row_number__"))
 
