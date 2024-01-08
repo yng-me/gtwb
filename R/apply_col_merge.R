@@ -1,6 +1,4 @@
-add_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 2, ...) {
-
-  if(length(.col_merge) == 0) return(.data)
+apply_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col = 2, ...) {
 
   clean_glue <- function(.x) {
     .x |>

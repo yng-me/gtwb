@@ -35,7 +35,7 @@ pct_to_pt <- function(.px, .pct, .factor = 1) {
 }
 
 set_row_height <- function(.px, .factor = 1) {
-  (16 + (px_to_pt(.px) * 2)) * .factor
+  (18 + (px_to_pt(.px) * 2)) * .factor
 }
 
 get_font_family <- function(.data) {

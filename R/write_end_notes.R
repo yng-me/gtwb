@@ -10,21 +10,7 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, .facade, ..
   } else if(.key == "_source_notes") {
     with_end_note <- isTRUE(!is.null(end_notes) & length(end_notes) > 0)
     notes <- end_notes
-  } else {
-    return(
-      list(
-        facade = .facade,
-        restart_at = restart_at
-      )
-    )
   }
-
-  if(!with_end_note) return(
-    list(
-      facade = .facade,
-      restart_at = restart_at
-    )
-  )
 
   if(.key == "_footnotes") {
     restart_at <- .start_row + 1
@@ -32,7 +18,7 @@ write_end_notes <- function(wb, .data, .key, .start_row, .start_col, .facade, ..
 
   var <- stringr::str_remove(.key, "^\\_")
   var_fontsize <- paste0(var, "_font_size")
-  var_padding_hr <- paste0(var, "_padding_horizontal")
+  var_padding_hr <- paste0(var, "_padding")
 
   for(i in seq_along(notes)) {
 

@@ -1,6 +1,4 @@
-add_formats <- function(.data, .formats, ...) {
-
-  if(length(.formats) == 0) return(.data)
+apply_formats <- function(.data, .formats, ...) {
 
   for(i in seq_along(.formats)) {
 

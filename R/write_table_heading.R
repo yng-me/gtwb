@@ -28,7 +28,7 @@ write_table_heading <- function(wb, .data, .start_row, .start_col, .col_end, .fa
 
     wb |> openxlsx::setRowHeights(
       rows = .start_row,
-      heights = set_row_height(get_value(.data, "heading_padding_horizontal")),
+      heights = set_row_height(get_value(.data, "heading_padding")),
       ...
     )
 
