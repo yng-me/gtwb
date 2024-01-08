@@ -1,9 +1,9 @@
-add_styles <- function(.data, .boxhead, .rows, .start_col, .start_row, .facade, ...) {
+apply_styles <- function(.data, .boxhead, .rows, .start_col, .start_row, .facade, ...) {
 
   styles <- .data[["_styles"]] |>
     dplyr::filter(locname == "data")
 
-  if(nrow(styles) == 0) return(invisible())
+  if(nrow(styles) == 0) return(.facade)
 
   colnames <- styles |>
     dplyr::distinct(colname) |>
@@ -11,6 +11,7 @@ add_styles <- function(.data, .boxhead, .rows, .start_col, .start_row, .facade, 
 
   for(i in seq_along(colnames)) {
     col <- colnames[i]
+
     col_which <- which(.boxhead == col)
 
     style <- styles |>

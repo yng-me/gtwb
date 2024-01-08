@@ -1,8 +1,8 @@
 #' 	Output a *gt* object as Excel
 #'
 #' @param .data A valid \code{gt} object.
+#' @param .sheet_name Which worksheet to write to. It can be the worksheet index or name. Default is \code{NULL}.
 #' @param .filename If \code{NULL} (which is default), will take the title of the table defined in \code{gt::tab_header()} as the filename. If title is not defined, filename will be set to \code{"Book 1.xlsx"}.
-#' @param .sheet_name Which worksheet to write to. It can be the worksheet index or name. Default is \code{"Sheet 1"}.
 #' @param .start_col A counting number specifying the starting column to write to.
 #' @param .start_row A counting number specifying the starting row to write to.
 #' @param .overwrite If \code{TRUE}, will overwrite any existing file with the same name.
@@ -142,36 +142,25 @@
 
 as_xlsx <- function(
   .data,
+  .sheet_name = NULL,
   .filename = NULL,
-  .sheet_name = "Sheet 1",
   .start_col = 2,
   .start_row = 2,
   .overwrite = TRUE,
   ...
 ) {
 
-  if(!("gt_tbl" %in% class(.data))) {
+  if(!inherits(.data, "gt_tbl")) {
     stop("Not a valid gt object.")
   }
 
-  gtx_facade <- list()
   type <- NULL
   var <- NULL
   column_label <- NULL
 
-  wb <- openxlsx::createWorkbook()
-
-  wb |> openxlsx::addWorksheet(
-    .sheet_name,
-    gridLines = FALSE,
-    orientation = get_value(.data, "page_orientation")
-  )
-
-  wb |> modifyBaseFont(
-    fontColour = get_value(.data, "table_font_color"),
-    fontSize = px_to_pt(get_value(.data, "table_font_size")),
-    fontName = get_font_family(.data)
-  )
+  gtx_facade <- list()
+  if(is.null(.sheet_name)) .sheet_name <- 1
+  wb <- create_workbook(.data, .sheet_name)
 
   boxhead <- .data[["_boxhead"]] |>
     dplyr::filter(type %in% c("stub", "default")) |>
@@ -215,7 +204,7 @@ as_xlsx <- function(
   }
 
   spanner_level <- 0
-  if(nrow(.data[["_spanners"]])) {
+  if(nrow(.data[["_spanners"]]) > 0) {
     spanner_level <- max(.data[["_spanners"]]$spanner_level)
   }
 
@@ -230,7 +219,7 @@ as_xlsx <- function(
   wb |> openxlsx::setRowHeights(
     sheet = .sheet_name,
     rows = restart_at:(restart_at + spanner_level),
-    heights = set_row_height(get_value(.data, "column_labels_padding_horizontal"))
+    heights = set_row_height(get_value(.data, "column_labels_padding"))
   )
 
   restart_at <- restart_at + spanner_level
@@ -265,18 +254,18 @@ as_xlsx <- function(
 
     row_df_all <- .data[["_data"]] |>
       tibble::rownames_to_column(var = "__row_number__") |>
-      add_formats(.data[["_formats"]])
+      apply_formats(.data[["_formats"]])
 
     for(i in seq_along(row_groups)) {
 
       row_df <- row_df_all |>
-        add_transforms(
+        apply_transforms(
           .data[["_transforms"]],
           .boxhead = boxhead,
           .start_row = data_row_start_p,
           .start_col = .start_col
         ) |>
-        add_col_merge(
+        apply_col_merge(
           .data[["_col_merge"]],
           .boxhead = boxhead,
           .start_row = restart_at + 1,
@@ -302,30 +291,8 @@ as_xlsx <- function(
       )
 
       gtx_facade <- gtx_facade |>
-        add_facade(
-          style = openxlsx::createStyle(
-            border = "bottom",
-            borderColour = get_value(.data, "row_group_border_bottom_color"),
-            borderStyle = set_border_style(get_value(.data, "row_group_border_bottom_width")),
-            wrapText = TRUE
-          ),
-          rows = restart_at + 1,
-          cols = .start_col:(ncol(row_df) + 1),
-          sheet = .sheet_name
-        )
-
-      gtx_facade <- gtx_facade |>
-        add_facade(
-          style = openxlsx::createStyle(
-            border = "top",
-            borderColour = get_value(.data, "row_group_border_top_color"),
-            borderStyle = set_border_style(get_value(.data, "row_group_border_top_width")),
-            valign = "center",
-            fontSize = pct_to_pt(
-              .px = get_value(.data, "table_font_size"),
-              .pct = get_value(.data, "row_group_font_size")
-            )
-          ),
+        add_border_row_group(
+          .data,
           rows = restart_at + 1,
           cols = .start_col:(ncol(row_df) + 1),
           sheet = .sheet_name
@@ -334,7 +301,7 @@ as_xlsx <- function(
       wb |> openxlsx::setRowHeights(
         sheet = .sheet_name,
         rows = restart_at + 1,
-        heights = set_row_height(get_value(.data, "row_group_padding_horizontal"))
+        heights = set_row_height(get_value(.data, "row_group_padding"))
       )
 
       rows_attr <- attributes(row_df)$row_heights
@@ -363,12 +330,11 @@ as_xlsx <- function(
           sheet = .sheet_name
         )
 
-      rows <- .data[["_data"]] |>
-        tibble::rownames_to_column() |>
+      rows <- row_df_all |>
         dplyr::filter(!!as.name(row_group) == row_groups[i]) |>
-        pull(rowname)
+        pull(`__row_number__`)
 
-      gtx_facade <- add_styles(
+      gtx_facade <- apply_styles(
         .data,
         .boxhead = boxhead,
         .rows = rows,
@@ -387,14 +353,14 @@ as_xlsx <- function(
 
     df <- .data[["_data"]] |>
       tibble::rownames_to_column(var = "__row_number__") |>
-      add_formats(.data[["_formats"]]) |>
-      add_transforms(
+      apply_formats(.data[["_formats"]]) |>
+      apply_transforms(
         .data[["_transforms"]],
         .boxhead = boxhead,
         .start_row = restart_at + 1,
         .start_col = .start_col
       ) |>
-      add_col_merge(
+      apply_col_merge(
         .data[["_col_merge"]],
         .boxhead = boxhead,
         .start_row = restart_at + 1,
@@ -428,42 +394,61 @@ as_xlsx <- function(
       )
   }
 
-  add_row <- 1
-  if(nrow(.data[["_footnotes"]]) > 0) {
-    add_row <- 0
-  }
+  stub_cols_df <- .data[["_stub_df"]] |>
+    dplyr::mutate(start_row = rownum_i + data_row_start)
 
   if(with_stub > 0) {
+
+    stub_cols_df <- .data[["_stub_df"]] |>
+      dplyr::group_by(group_id) |>
+      tidyr::nest() |>
+      tibble::rownames_to_column(var = "start_row") |>
+      dplyr::mutate(start_row = as.integer(start_row) - 1) |>
+      tidyr::unnest(data) |>
+      dplyr::ungroup() |>
+      dplyr::mutate(start_row = start_row + rownum_i + data_row_start) |>
+      dplyr::select(dplyr::any_of(names(rx_adsl_tbl$`_stub_df`)), start_row)
 
     stub_cols <- .data[["_boxhead"]] |>
       dplyr::filter(type == "stub") |>
       pull(var)
 
+    stub_col <- which(stub_cols %in% boxhead) + .start_col - 1
+
+    for(i in seq_along(stub_cols_df$rownum_i)) {
+
+      indent <- stub_cols_df$indent[i]
+      row_stub <- stub_cols_df$start_row[i]
+
+      gtx_facade <- gtx_facade |>
+        add_facade(
+          style = openxlsx::createStyle(
+            border = "right",
+            borderColour = get_value(.data, "stub_border_color"),
+            borderStyle = set_border_style(get_value(.data, "stub_border_width")),
+            indent = as.integer(round(as.integer(indent) / 2.5))
+          ),
+          rows = row_stub,
+          cols = stub_col,
+          sheet = .sheet_name
+        )
+    }
+  }
+
+  if(nrow(.data[["_footnotes"]]) > 0) {
     gtx_facade <- gtx_facade |>
       add_facade(
         style = openxlsx::createStyle(
-          border = "right",
-          borderColour = get_value(.data, "stub_border_color"),
-          borderStyle = set_border_style(get_value(.data, "stub_border_width"))
+          border = "bottom",
+          borderColour = get_value(.data, "table_body_border_bottom_color"),
+          borderStyle = set_border_style(get_value(.data, "table_body_border_bottom_width")),
+          wrapText = TRUE
         ),
-        rows = data_row_start:(restart_at - add_row),
-        cols = which(stub_cols %in% boxhead) + .start_col - 1,
+        rows = restart_at,
+        cols = col_range,
         sheet = .sheet_name
       )
   }
-
-  gtx_facade <- gtx_facade |>
-    add_facade(
-      style = openxlsx::createStyle(
-        border = "bottom",
-        borderColour = get_value(.data, "table_body_border_bottom_color"),
-        borderStyle = set_border_style(get_value(.data, "table_body_border_bottom_width")),
-        wrapText = TRUE
-      ),
-      rows = restart_at - add_row,
-      cols = col_range,
-      sheet = .sheet_name
-    )
 
   wb |> openxlsx::setColWidths(
     sheet = .sheet_name,
@@ -521,31 +506,13 @@ as_xlsx <- function(
 
   restart_at <- from_source_notes$restart_at
 
-  # Top border style
   gtx_facade <- from_source_notes$facade |>
-    add_facade(
-      style = openxlsx::createStyle(
-        border = "top",
-        borderColour = get_value(.data, "table_border_top_color"),
-        borderStyle = set_border_style(get_value(.data, "table_border_top_width")),
-        wrapText = TRUE
-      ),
-      rows = .start_row,
-      cols = col_range,
-      sheet = .sheet_name
-    )
-
-  # Bottom border style
-  gtx_facade <- gtx_facade |>
-    add_facade(
-      style = openxlsx::createStyle(
-        border = "bottom",
-        borderColour = get_value(.data, "table_border_bottom_color"),
-        borderStyle = set_border_style(get_value(.data, "table_border_bottom_width"))
-      ),
-      rows = restart_at - 1,
-      cols = col_range,
-      sheet = .sheet_name
+    add_border_outer(
+      .data = .data,
+      .sheet_name = .sheet_name,
+      .cols = col_range,
+      .top = .start_row,
+      .bottom = restart_at - 1
     )
 
   if(.start_col > 1) {
@@ -556,24 +523,25 @@ as_xlsx <- function(
     )
   }
 
+  rows_height <- stub_cols_df$start_row
+  rows_height_factor <- 1
   if(!is.null(rows_with_height)) {
-    wb |> openxlsx::setRowHeights(
-      sheet = .sheet_name,
-      rows = rows_with_height,
-      heights = set_row_height(
-        get_value(.data, "data_row_padding_horizontal"),
-        .factor = 1.5
-      )
-    )
+    rows_height <- rows_with_height
+    rows_height_factor <- 1.25
   }
+
+  wb |> openxlsx::setRowHeights(
+    sheet = .sheet_name,
+    rows = rows_height,
+    heights = set_row_height(
+      get_value(.data, "data_row_padding"),
+      .factor = rows_height_factor
+    )
+  )
 
   wb |> apply_facade(gtx_facade)
   wb |> update_shared_strings(gtx_facade)
-
-  wb |> openxlsx::saveWorkbook(
-    file = set_filename(.filename, .data[["_heading"]]),
-    overwrite = .overwrite
-  )
+  wb |> save_workbook(.data, .filename, overwrite = .overwrite)
 
   return(.data)
 

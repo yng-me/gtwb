@@ -1,6 +1,4 @@
-add_transforms <- function(.data, .transforms, .boxhead, .start_row, .start_col, ...) {
-
-  if(length(.transforms) == 0) return(.data)
+apply_transforms <- function(.data, .transforms, .boxhead, .start_row, .start_col, ...) {
 
   for(i in seq_along(.transforms)) {
 

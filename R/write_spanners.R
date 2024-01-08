@@ -3,7 +3,7 @@ write_spanners <- function(wb, .data, .boxhead, .start_col, .start_row, .facade,
   restart_at <- .start_row
   spanners <- .data[["_spanners"]]
 
-  if(nrow(spanners) == 0) return(invisible())
+  if(nrow(spanners) == 0) return(.facade)
 
   spanner_levels <- rev(1:max(spanners$spanner_level))
 
