@@ -159,7 +159,7 @@ as_xlsx <- function(
   column_label <- NULL
 
   gtx_facade <- list()
-  if(is.null(.sheet_name)) .sheet_name <- 1
+  if(is.null(.sheet_name)) .sheet_name <- "Sheet1"
   wb <- create_workbook(.data, .sheet_name)
 
   boxhead <- .data[["_boxhead"]] |>
@@ -478,7 +478,7 @@ as_xlsx <- function(
       widths = pct_to_pt(
         .px = get_value(.data, "table_font_size"),
         .pct = unlist(col_width),
-        .factor = 1/8
+        .factor = 1/7
       ),
       cols = i + .start_col - 1
     )
