@@ -1,12 +1,12 @@
 #' 	Output a *gt* object as Excel
 #'
 #' @param .data A valid \code{gt} object.
+#' @param ... For future implementation.
 #' @param .sheet_name Which worksheet to write to. It can be the worksheet index or name. Default is \code{NULL}.
 #' @param .filename If \code{NULL} (which is default), will take the title of the table defined in \code{gt::tab_header()} as the filename. If title is not defined, filename will be set to \code{"Book 1.xlsx"}.
 #' @param .start_col A counting number specifying the starting column to write to.
 #' @param .start_row A counting number specifying the starting row to write to.
 #' @param .overwrite If \code{TRUE}, will overwrite any existing file with the same name.
-#' @param ... For future implementation.
 #'
 #' @return The same `gt` object. Output as Excel file as a side effect.
 #' @export
@@ -142,12 +142,12 @@
 
 as_xlsx <- function(
   .data,
+  ...,
   .sheet_name = NULL,
   .filename = NULL,
   .start_col = 2,
   .start_row = 2,
-  .overwrite = TRUE,
-  ...
+  .overwrite = TRUE
 ) {
 
   if(!inherits(.data, "gt_tbl")) {
@@ -407,7 +407,7 @@ as_xlsx <- function(
       tidyr::unnest(data) |>
       dplyr::ungroup() |>
       dplyr::mutate(start_row = start_row + rownum_i + data_row_start) |>
-      dplyr::select(dplyr::any_of(names(rx_adsl_tbl$`_stub_df`)), start_row)
+      dplyr::select(dplyr::any_of(names(.data[["_stub_df"]])), start_row)
 
     stub_cols <- .data[["_boxhead"]] |>
       dplyr::filter(type == "stub") |>
