@@ -1,6 +1,6 @@
 Package: gtx
 Type: Package
-Title: GT Workbook
+Title: GT extension for Excel
 Description: An extension of *gt* package for exporting *gt* object in to an Excel workbook.
 Version: 0.1.0
 Authors@R: c(
@@ -23,6 +23,10 @@ Imports:
   stringr,
   openxlsx,
   glue,
+  markdown,
+  purrr,
+  tibble,
+  rlang,
   systemfonts
 Suggests: 
   testthat (>= 3.0.0),

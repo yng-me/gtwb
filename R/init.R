@@ -1,0 +1,23 @@
+utils::globalVariables(
+  c(
+    ":=",
+    "__row_number__",
+    "value",
+    "var",
+    "type",
+    "locname",
+    "prefix",
+    "rownum_i",
+    "group_id",
+    "start_row",
+    "data",
+    "column_align",
+    "column_width",
+    "column_label",
+    "family",
+    "parameter",
+    "spanner_level",
+    "colname",
+    "rownum"
+  )
+)

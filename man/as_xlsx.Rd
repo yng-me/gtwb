@@ -4,30 +4,16 @@
 \alias{as_xlsx}
 \title{Output a *gt* object as Excel}
 \usage{
-as_xlsx(
-  .data,
-  .filename = NULL,
-  .sheet_name = "Sheet 1",
-  .start_col = 2,
-  .start_row = 2,
-  .overwrite = TRUE,
-  ...
-)
+as_xlsx(.data, ..., .filename = NULL, .overwrite = TRUE)
 }
 \arguments{
 \item{.data}{A valid \code{gt} object.}
 
+\item{...}{Accepts all arguments in \code{as_workbook()}.}
+
 \item{.filename}{If \code{NULL} (which is default), will take the title of the table defined in \code{gt::tab_header()} as the filename. If title is not defined, filename will be set to \code{"Book 1.xlsx"}.}
 
-\item{.sheet_name}{Which worksheet to write to. It can be the worksheet index or name. Default is \code{"Sheet 1"}.}
-
-\item{.start_col}{A counting number specifying the starting column to write to.}
-
-\item{.start_row}{A counting number specifying the starting row to write to.}
-
 \item{.overwrite}{If \code{TRUE}, will overwrite any existing file with the same name.}
-
-\item{...}{For future implementation.}
 }
 \value{
 The same `gt` object. Output as Excel file as a side effect.

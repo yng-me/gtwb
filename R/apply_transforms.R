@@ -12,7 +12,6 @@ apply_transforms <- function(.data, .transforms, .boxhead, .start_row, .start_co
 
       .data <- .data |>
         dplyr::mutate(
-          is_in_the_row = as.integer(`__row_number__`) %in% transform$resolved$rows,
           prefix = paste0(
             "[",
             .start_row + as.integer(`__row_number__`),
@@ -21,12 +20,12 @@ apply_transforms <- function(.data, .transforms, .boxhead, .start_row, .start_co
             "]~~~"
           ),
           !!as.name(col) := dplyr::if_else(
-            is_in_the_row & !is.na(!!as.name(col)),
+            as.integer(`__row_number__`) %in% transform$resolved$rows & !is.na(!!as.name(col)),
             paste0(prefix, to_mark(transform$fn(!!as.name(col)))),
             !!as.name(col)
           )
         ) |>
-        dplyr::select(-c(prefix, is_in_the_row))
+        dplyr::select(-prefix)
     }
 
   }

@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(gtwb)
+library(gtx)
 
-test_check("gtwb")
+test_check("gtx")
