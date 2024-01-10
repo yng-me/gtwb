@@ -4,7 +4,8 @@ apply_col_merge <- function(.data, .col_merge, .boxhead, .start_row, .start_col 
     .x |>
       stringr::str_remove_all("<<\\s*\\-\\s*>>") |>
       stringr::str_remove_all("(>|<)+") |>
-      stringr::str_remove_all("\\(\\)")
+      stringr::str_remove_all("\\(\\)") |>
+      stringr::str_squish()
   }
 
   for(i in seq_along(.col_merge)) {

@@ -25,6 +25,8 @@ px_to_pt <- function(.px) {
 
 pct_to_pt <- function(.px, .pct, .factor = 1) {
 
+  if(is.null(.pct)) return(NULL)
+
   if(grepl("%$", .pct)) {
     (px_to_pt(.px) * (to_int(.pct) / 100)) * .factor
   } else if(grepl("px$", .pct)) {

@@ -8,7 +8,7 @@ create_workbook <- function(.data, .sheet_name = NULL) {
     orientation = get_value(.data, "page_orientation")
   )
 
-  wb |> modifyBaseFont(
+  wb |> openxlsx::modifyBaseFont(
     fontColour = get_value(.data, "table_font_color"),
     fontSize = px_to_pt(get_value(.data, "table_font_size")),
     fontName = get_font_family(.data)

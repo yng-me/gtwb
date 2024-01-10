@@ -7,7 +7,7 @@ apply_styles <- function(.data, .boxhead, .rows, .start_col, .start_row, .facade
 
   colnames <- styles |>
     dplyr::distinct(colname) |>
-    pull(colname)
+    dplyr::pull(colname)
 
   for(i in seq_along(colnames)) {
     col <- colnames[i]
