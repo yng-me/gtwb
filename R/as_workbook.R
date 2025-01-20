@@ -26,7 +26,7 @@ as_workbook <- function(
   }
 
   gtx_facade <- list()
-  if(is.null(.sheet_name)) .sheet_name <- "Sheet1"
+  if(is.null(.sheet_name)) .sheet_name <- "Sheet 1"
   wb <- create_workbook(.data, .sheet_name)
 
   boxhead <- .data[["_boxhead"]] |>
@@ -143,19 +143,21 @@ as_workbook <- function(
         dplyr::select(-dplyr::any_of("__row_number__"))
 
       # Row group
-      wb |> openxlsx::writeData(
-        sheet = .sheet_name,
-        x = row_groups[i],
-        startCol = .start_col,
-        startRow = restart_at + 1
-      )
+      wb |>
+        openxlsx::writeData(
+          sheet = .sheet_name,
+          x = row_groups[i],
+          startCol = .start_col,
+          startRow = restart_at + 1
+        )
 
       # Merge row group
-      wb |> openxlsx::mergeCells(
-        sheet = .sheet_name,
-        rows = restart_at + 1,
-        cols = .start_col:(ncol(row_df) + 1)
-      )
+      wb |>
+        openxlsx::mergeCells(
+          sheet = .sheet_name,
+          rows = restart_at + 1,
+          cols = .start_col:(ncol(row_df) + 1)
+        )
 
       gtx_facade <- gtx_facade |>
         add_border_row_group(
@@ -165,24 +167,26 @@ as_workbook <- function(
           sheet = .sheet_name
         )
 
-      wb |> openxlsx::setRowHeights(
-        sheet = .sheet_name,
-        rows = restart_at + 1,
-        heights = set_row_height(get_value(.data, "row_group_padding"))
-      )
+      wb |>
+        openxlsx::setRowHeights(
+          sheet = .sheet_name,
+          rows = restart_at + 1,
+          heights = set_row_height(get_value(.data, "row_group_padding"))
+        )
 
       rows_attr <- attributes(row_df)$row_heights
       if(!is.null(rows_attr)) {
         rows_with_height <- c(rows_with_height, rows_attr[1:nrow(row_df)])
       }
 
-      wb |> openxlsx::writeData(
-        sheet = .sheet_name,
-        x = row_df,
-        startCol = .start_col,
-        startRow = restart_at + 2,
-        colNames = FALSE
-      )
+      wb |>
+        openxlsx::writeData(
+          sheet = .sheet_name,
+          x = row_df,
+          startCol = .start_col,
+          startRow = restart_at + 2,
+          colNames = FALSE
+        )
 
       gtx_facade <- gtx_facade |>
         add_facade(
@@ -316,11 +320,12 @@ as_workbook <- function(
       )
   }
 
-  wb |> openxlsx::setColWidths(
-    sheet = .sheet_name,
-    widths = get_value(.data, "table_width"),
-    cols = (.start_col + 1):(length(boxhead) + 1)
-  )
+  wb |>
+    openxlsx::setColWidths(
+      sheet = .sheet_name,
+      widths = get_value(.data, "table_width"),
+      cols = (.start_col + 1):(length(boxhead) + 1)
+    )
 
   for(i in seq_along(boxhead)) {
 
@@ -349,11 +354,12 @@ as_workbook <- function(
       cols_width_value <- "auto"
     }
 
-    wb |> openxlsx::setColWidths(
-      sheet = .sheet_name,
-      widths = cols_width_value,
-      cols = i + .start_col - 1
-    )
+    wb |>
+      openxlsx::setColWidths(
+        sheet = .sheet_name,
+        widths = cols_width_value,
+        cols = i + .start_col - 1
+      )
   }
 
   from_footnotes <- wb |>
@@ -388,11 +394,12 @@ as_workbook <- function(
     )
 
   if(.start_col > 1) {
-    wb |> openxlsx::setColWidths(
-      sheet = .sheet_name,
-      widths = 2,
-      cols = 1
-    )
+    wb |>
+      openxlsx::setColWidths(
+        sheet = .sheet_name,
+        widths = 2,
+        cols = 1
+      )
   }
 
   rows_height <- stub_cols_df$start_row
@@ -402,17 +409,19 @@ as_workbook <- function(
     rows_height_factor <- 1.25
   }
 
-  wb |> openxlsx::setRowHeights(
-    sheet = .sheet_name,
-    rows = rows_height,
-    heights = set_row_height(
-      get_value(.data, "data_row_padding"),
-      .factor = rows_height_factor
+  wb |>
+    openxlsx::setRowHeights(
+      sheet = .sheet_name,
+      rows = rows_height,
+      heights = set_row_height(
+        get_value(.data, "data_row_padding"),
+        .factor = rows_height_factor
+      )
     )
-  )
 
   wb |> apply_facade(gtx_facade)
   wb |> update_shared_strings(gtx_facade)
 
   return(wb)
+
 }

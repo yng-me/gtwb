@@ -16,7 +16,14 @@ gtx <- function(.data, ...) {
   .data <- gt::gt(.data)
   .data[["_wb"]] <- as_workbook(.data, ...)
 
-  class(.data) <- c("gtx_tbl", class(.data))
+  as_gtx_tbl(.data)
 
-  return(.data)
+}
+
+
+as_gtx_tbl <- function(.data) {
+
+  class(.data) <- c("gtx_tbl", class(.data))
+  .data
+
 }

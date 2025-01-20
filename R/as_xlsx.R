@@ -145,7 +145,7 @@ as_xlsx <- function(
 ) {
 
   if(!inherits(.data, "gt_tbl") & !inherits(.data, "gtx_tbl")) {
-    stop("Not a valid gt or gtx object.")
+    .data <- gt(.data, ...)
   }
 
   if(inherits(.data, "gt_tbl")) {
